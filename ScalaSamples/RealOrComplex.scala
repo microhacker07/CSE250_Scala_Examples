@@ -45,17 +45,19 @@ object RealOrComplex extends App {
    //Return imaginary part of number
    //The allowability of "Any" here makes me very uncomfortable, IMPHO.  
    //
-   def imagPart(w: Any) = w match {
+   def imagPart(w: AnyVal) = w match {
       //case RealVal => 0.0         //causes error: match not found (unless default is commented in)
       case RealVal(x) => 0.0
       //case ComplexPolarVal(z) => z.y    //error: both arguments needed
       case ComplexPolarVal(r,theta) => ComplexPolarVal(r,theta).y
-      //case _ => 0.0                     //default case---should we use it?
+      case _ => 0.0                     //default case---should we use it?
    }
 
 
    val u = RealVal(3.0)
-   val v = ComplexPolarVal(1.0,Pi/2)
+   val v = ComplexPolarVal(1.0,Pi/2.0)
+   val w = new ComplexPolar(1.0,Pi/4.0)
    println(s"The imaginary part of u is ${imagPart(u)} and of v is ${imagPart(v)}")
+   println(s"Also the imag part of w is ${imagPart(w)}")
 }
    
