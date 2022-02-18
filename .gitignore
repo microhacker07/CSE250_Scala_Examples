@@ -1,0 +1,5 @@
+*.class
+*.log
+
+ScalaSamples/*.class
+ScalaSamples/*.log
