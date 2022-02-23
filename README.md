@@ -7,3 +7,13 @@ The folder ScalaSamples contains all the examples that are found on Dr. Kenneth 
     [scala samples](https://cse.buffalo.edu/~regan/cse250/ScalaSamples/)
 )
 for the Spring 2022, CSE 250 class.
+
+---
+
+## Text Files
+
+- `Declaration.txt`: Contains the US's Declaration of Independance
+
+- `Gettysburg.txt`: Contains the Lincoln's Gettysburg Address
+
+- `JustHamlet.txt`: Contains the script of Shakespeare's play, *Hamlet* 
