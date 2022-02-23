@@ -12,6 +12,7 @@ then
     mkdir ./ScalaSamples
 fi
 mv download/cse250/ScalaSamples/*.scala ./ScalaSamples/
+mv download/cse250/ScalaSamples/*.txt   ./ScalaSamples/
 rm -rf download
 
 # As per Dr. Regan's request/suggestion, any file without a header is probably
@@ -20,7 +21,7 @@ rm -rf download
 
 # Reference: https://www.digitalocean.com/community/tutorials/workflow-loop-through-files-in-a-directory
 
-for FILE in ./ScalaSamples/*
+for FILE in ./ScalaSamples/*.scala
 do
     grep -E "/[*][*].*File.*[.]scala.*KWR" $FILE &>/dev/null
     EXIT=$?
