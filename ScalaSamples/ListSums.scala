@@ -45,7 +45,7 @@ object ListSums extends App {
        Here it is (IMPHO) cleaner to include the test psum =? 0 in the match.
        Convention is to put accumulator parameters(s) last.
     */
-   def thresholdSums(ell: List[Int], threshold: Int, psum: Int): List[Int] = (ell,psum) match {
+   def thresholdSums0(ell: List[Int], threshold: Int, psum: Int): List[Int] = (ell,psum) match {
       case (Nil,0) => Nil         // no more elements to add
       case (Nil,p) => p :: Nil    // psum :: Nil would be equivalent
       case (x :: xs, p) => if (x+p >= threshold) {
@@ -55,7 +55,17 @@ object ListSums extends App {
       }
    }
 
-   println("Sub-sums of " + ell + " for threshold 9 are " + thresholdSums(ell, 9, 0))
+   def thresholdSums(ell: List[Int], threshold: Int, psum: Int): List[Int] = ell match {
+      case Nil => if (psum == 0) Nil else (psum :: Nil)         // no more elements to add
+      case x :: xs => if (x+psum >= threshold) {
+         (x+psum) :: thresholdSums(xs, threshold, 0)
+      } else {
+         thresholdSums(xs, threshold, psum+x)    // INVARIANT: psum < threshold in any call
+      }
+   }
+
+
+   println("Sub-sums of " + ell + " for threshold 10 are " + thresholdSums(ell, 10, 0))
             
 
 

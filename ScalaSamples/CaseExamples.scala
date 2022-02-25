@@ -12,17 +12,26 @@ object CaseExamples extends App {
       case _ => false
    }
 
-   def isVowel2(c: Char) = c match {
+   def isVowel2(c: Char): Boolean = c match {
       case 'a' | 'A' | 'e' | 'E' | 'i' | 'I' | 'o' | 'O' | 'u' | 'U' | 'y' | 'Y' => true
       case _ => false 
    }
 
    def vowelsIn(str: String): List[Boolean] = str.headOption match {
       case None => Nil
-      case Some(c) => isVowel2(c) :: vowelsIn(str.tail)
+      case Some(c) => isVowel(c) :: vowelsIn(str.tail)
    }
 
-   println("Which chars in \"AnyRef\" are vowels? " + vowelsIn("AnyRef"))
+   /** Make list of chars and whether they are vowels, as tuples (char, isVowel(char))
+    */
+   def vowelsIn2(str: String): List[(Char,Boolean)] = str.headOption match {
+      case None => Nil
+      case Some(c) => (c,isVowel2(c)) :: vowelsIn2(str.tail)
+   }
+
+   println("Which chars in \"AnyRef\" are vowels? " + vowelsIn2("AnyRef"))
+
+   println("\n\n")
 
    /** Matching on tuples 
     */
