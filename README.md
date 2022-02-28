@@ -17,3 +17,5 @@ for the Spring 2022, CSE 250 class.
 - `Gettysburg.txt`: Contains the Lincoln's Gettysburg Address
 
 - `JustHamlet.txt`: Contains the script of Shakespeare's play, *Hamlet* 
+
+- `wordDWYL.txt`: List of english words found at [DWYL's english words repo](https://github.com/dwyl/english-words)
