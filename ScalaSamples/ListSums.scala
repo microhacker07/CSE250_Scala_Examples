@@ -99,8 +99,11 @@ object ListSums extends App {
       case Nil => 0
       case x :: Nil => 0
       case x :: y :: Nil => 0    //two elements cannot make a double-dip
-      case x :: y :: z :: rest => (y < x && z < y).compare(false) + count2Dips(y :: z :: rest) //overlaps
-      //case x :: y :: z :: rest => (y < x && z < y).compare(false) + count2Dips(z :: rest)    //no overlaps
+      case x :: y :: z :: rest => (y < x && z < y).compare(false) + count2Dips(y :: z :: rest) 
+         //counts overlaps because we put both y and z back on the list being recursed on.
+
+      //case x :: y :: z :: rest => (y < x && z < y).compare(false) + count2Dips(z :: rest)    
+         //effectively skips overlaps because we don't put y back, only z
    }
 
    val ell2 = List(1,3,6,2,5,4,2,1,9,6,4,8)
