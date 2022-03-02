@@ -77,7 +77,16 @@ object ListSums extends App {
       case Some(c) => c :: explode(str.tail)
    }
 
-   println("The word big-faced exploded is " + explode("big-faced"))
+   def explode2(str: String): List[Char] = {
+      var outlist = Nil:List[Char]
+      for (c <- str) {
+         outlist = c :: outlist  //note why this reverses
+      }
+      outlist
+   }
+
+   println("The word big-faced exploded normally is " + explode("big-faced"))
+   println("The word big-faced exploded reversed is " + explode2("big-faced"))
 
 
    /** Example of a match taking things two-at-a-time.  Count the number
@@ -86,8 +95,8 @@ object ListSums extends App {
    def countDips(ell: List[Int]): Int = ell match {
       case Nil => 0
       case x :: Nil => 0
-      //case x :: y :: rest => if (y < x) { 1 + countDips(y :: rest) } else { countDips(y :: rest) }
-      case x :: y :: rest => (y < x).compare(false) + countDips(y :: rest)    //neater but riskier?
+      case x :: y :: rest => if (y < x) { 1 + countDips(y :: rest) } else { countDips(y :: rest) }
+      //case x :: y :: rest => (y < x).compare(false) + countDips(y :: rest)    //neater but riskier?
    }
 
    println(s"The number of dips in $ell is ${countDips(ell)} and in ${ell.reverse} is ${countDips(ell.reverse)}")
