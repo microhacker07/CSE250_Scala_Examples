@@ -95,8 +95,8 @@ object ListSums extends App {
    def countDips(ell: List[Int]): Int = ell match {
       case Nil => 0
       case x :: Nil => 0
-      case x :: y :: rest => if (y < x) { 1 + countDips(y :: rest) } else { countDips(y :: rest) }
-      //case x :: y :: rest => (y < x).compare(false) + countDips(y :: rest)    //neater but riskier?
+      //case x :: y :: rest => if (y < x) { 1 + countDips(y :: rest) } else { countDips(y :: rest) }
+      case x :: y :: rest => (y < x).compareTo(false) + countDips(y :: rest)    //neater but riskier?
    }
 
    println(s"The number of dips in $ell is ${countDips(ell)} and in ${ell.reverse} is ${countDips(ell.reverse)}")
@@ -128,10 +128,14 @@ object ListSums extends App {
       case Nil => if (phrase == "") Nil else phrase::Nil
       case wd :: rest => if (wd.length >= lastWordLen) {   //decreasing phrase stopped, wd may begin new phrase
          phrase :: decreasingPhrases(rest, wd, wd.length) 
-      } else if (phrase == "") {
-         decreasingPhrases(rest, wd, wd.length)
-      } else {
-         decreasingPhrases(rest, phrase + " " + wd, wd.length)
+      } else { phrase match {
+         case "" => decreasingPhrases(rest, wd, wd.length)
+         case _ => decreasingPhrases(rest, phrase + " " + wd, wd.length)
+      }
+      //} else if (phrase == "") {
+         //decreasingPhrases(rest, wd, wd.length)
+      //} else {
+         //decreasingPhrases(rest, phrase + " " + wd, wd.length)
       }
    }
 
