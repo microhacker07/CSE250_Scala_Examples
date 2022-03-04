@@ -85,6 +85,7 @@ object ListSums extends App {
       outlist
    }
 
+
    println("The word big-faced exploded normally is " + explode("big-faced"))
    println("The word big-faced exploded reversed is " + explode2("big-faced"))
 
