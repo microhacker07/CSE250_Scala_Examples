@@ -13,10 +13,11 @@ for i in "${FOLDERS[@]}"
 do
     wget -q -r -np -nH --cut-dirs=1 -P download "$URL/$i/"
 
-    if [ ! -d "./$i" ]
+    if [ -d "./$i" ]
     then
-        mkdir "./$i"
+        rm -r $i
     fi
+    mkdir "./$i"
 
     cd "download/cse250/$i/"
 
