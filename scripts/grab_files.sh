@@ -3,30 +3,43 @@
 # Grabs the example scala files from Dr. Kenneth Regan's website
 # And keeps the ones that have a header
 
-EXAMPLES="https://cse.buffalo.edu/~regan/cse250/ScalaSamples/"
+URL="https://cse.buffalo.edu/~regan/cse250"
 
-wget -q -r -np -nH --cut-dirs=1 -P download $EXAMPLES
+FOLDERS=("ScalaSamples" "MaxWords" "DataStructures")
 
-if [ ! -d ./ScalaSamples ]
-then
-    mkdir ./ScalaSamples
-fi
-mv download/cse250/ScalaSamples/*.scala ./ScalaSamples/
-mv download/cse250/ScalaSamples/*.txt   ./ScalaSamples/
-rm -rf download
+WORKDIR=$(pwd)
 
-# As per Dr. Regan's request/suggestion, any file without a header is probably
-# not finished. Therefore this will remove all files without a header.
-# Using regex... Hopefully it does not vary much.
-
-# Reference: https://www.digitalocean.com/community/tutorials/workflow-loop-through-files-in-a-directory
-
-for FILE in ./ScalaSamples/*.scala
+for i in "${FOLDERS[@]}"
 do
-    grep -E "/[*][*].*File.*[.]scala.*KWR" $FILE &>/dev/null
-    EXIT=$?
-    if [ $((EXIT)) -eq 1 ]
+    wget -q -r -np -nH --cut-dirs=1 -P download "$URL/$i/"
+
+    if [ ! -d "./$i" ]
     then
-        rm $FILE
+        mkdir "./$i"
     fi
+
+    cd "download/cse250/$i/"
+
+    mv *.scala "$WORKDIR/$i/"
+    mv *.txt   "$WORKDIR/$i/"
+
+    cd $WORKDIR
+
+    # As per Dr. Regan's request/suggestion, any file without a header is probably
+    # not finished. Therefore this will remove all files without a header.
+    # Using regex... Hopefully it does not vary much.
+
+    # Reference: https://www.digitalocean.com/community/tutorials/workflow-loop-through-files-in-a-directory
+
+    for FILE in "./$i/*.scala"
+    do
+        grep -E "/[*][*].*File.*[.]scala.*KWR" $FILE &>/dev/null
+        EXIT=$?
+        if [ $((EXIT)) -eq 1 ]
+        then
+            rm $FILE
+        fi
+    done
 done
+
+rm -rf download

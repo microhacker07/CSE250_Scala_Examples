@@ -8,6 +8,6 @@ git pull
 
 ./scripts/grab_files.sh
 
-git add ./ScalaSamples
+git add .
 git commit -m "Updated at ${DATE}"
 git push
