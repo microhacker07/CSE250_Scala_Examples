@@ -1,0 +1,8 @@
+Small test of hyphen cases --- print out lines for best output.
+If your code is bug-prone, you will get that as max-size word.
+You might be bug-eyed at what words are on the list with no hyphen...
+If you print the last long word, you haven't bogeyed; don't be bog-eyed.
+How you treat triple hyphen is not a big-bad-bug.
+But be sure that non-alpha etc. chars are not joined!!! to words.
+I hope the result was fun to see.
+

@@ -1,0 +1,63 @@
+[Note that this output preserves buggy cases like "liberal-conceited" and "GUILDENSTERNGUILDENSTERN"]
+
+The word of longest length 14 is unproportioned in line 1031, column 2
+After tokenizing, the word of longest length 17 is liberal-conceited in line 7475, column 01
+The word of longest length 14 is unproportioned in line 1031, column 2
+After tokenizing, the word of longest length 14 is unproportioned in line 1031, column 21
+After tokenizating and dehyphenating:
+The word of longest length 14 is unproportioned in line 1031, column 2
+After tokenizating and dehyphenating:
+The word of longest length 14 is unproportioned in line 1031, column 2
+The word of longest length 24 is GUILDENSTERNGUILDENSTERN in line 4227, column 0
+The word of longest length 24 is GUILDENSTERNGUILDENSTERN in line 4227, column 0
+The word of longest length 14 is pigeon-liver'd in line 3194, column 3
+The word of longest length 15 is longer--married in line 619, column 4
+After tokenizating and dehyphenating:
+The word of longest length 12 is consecrate-- in line 4, column 14
+After tokenizating and dehyphenating:
+The word of longest length 14 is unproportioned in line 1031, column 2
+After tokenizating and dehyphenating:
+The word of longest length 14 is unproportioned in line 1031, column 2
+After tokenizating and dehyphenating:
+The word of longest length 12 is consecrate-- in line 4, column 14
+After tokenizating and dehyphenating:
+The word of longest length 12 is consecrate-- in line 4, column 14
+The word of longest length 14 is devotion--that in line 4, column 139
+After tokenizating and dehyphenating:
+The word of longest length 12 is consecrate-- in line 4, column 14
+The word of longest length 15 is Uncopyrightable in line 65, column 184
+After tokenizating and dehyphenating:
+The word of longest length 13 is cases---print in line 0, column 4
+The word of longest length 13 is cases---print in line 0, column 5
+The word of longest length 13 is cases---print in line 0, column 5
+The word of longest length 13 is cases---print in line 0, column 5
+The word of longest length 13 is cases---print in line 0, column 5
+After tokenizating and dehyphenating:
+The word of longest length 13 is cases---print in line 0, column 4
+After tokenizating and dehyphenating:
+The word of longest length 15 is undistinguished in line 59, column 32
+After tokenizating and dehyphenating:
+The word of longest length 15 is Javascript-like in line 84, column 15
+After tokenizating and dehyphenating:
+The word of longest length 15 is Javascript-like in line 84, column 15
+After tokenizating and dehyphenating:
+The word of longest length 15 is Javascript-like in line 84, column 15
+After tokenizating and dehyphenating:
+The word of longest length 15 is Javascript-like in line 84, column 15
+The word of longest length 13 is cases---print in line 0, column 5
+The word of longest length 13 is cases---print in line 0, column 5
+The word of longest length 9 is nullSmall in line 0, column 0
+The word of longest length 7 is bogeyed in line 3, column 15
+The word of longest length 7 is bugeyed in line 2, column 4
+The word of longest length 4 is -,-. in line 1, column 2
+The word of longest length 4 is -,-. in line 1, column 2
+The word of longest length 7 is bugeyed in line 2, column 4
+After tokenizating and dehyphenating:
+The word of longest length 14 is unproportioned in line 1031, column 2
+After tokenizating and dehyphenating:
+The word of longest length 7 is bugeyed in line 2, column 3
+After tokenizating and dehyphenating:
+The word of longest length 7 is bugeyed in line 2, column 3
+After tokenizating and dehyphenating:
+The word of longest length 14 is unproportioned in line 1031, column 2
+The word of longest length 15 is longer--married in line 619, column 4
