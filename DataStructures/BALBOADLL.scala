@@ -13,7 +13,6 @@ class BALBOADLL[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses S
    val theList: SortedDLL[ArrayBuffer[A]] = new SortedDLL[ArrayBuffer[A]]((x,y) => keyComp(x(0),y(0)))
    private var _size = 0
    private var rnumArrays = 1
-   //theList.insert(new ArrayBuffer[A](), theList.end)    //the sentinel
    
 
    /** Iter adds three methods to standard Scala next() and hasNext for iterators.
@@ -29,6 +28,9 @@ class BALBOADLL[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses S
       def apply(): A = {
          assert(hasNext, "Attempt to fetch item past end in AIOLI\n" + Outer.diagnosticString)
          //return litr.at.item(aind)
+         assert(litr.hasNext && 0 <= aind && aind < litr().length,
+                "Out of bounds index aind = " + aind + " in object\n" + Outer.diagnosticString)
+
          return litr()(aind)
       }
 
@@ -64,13 +66,14 @@ class BALBOADLL[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses S
    def end: Iter = new Iter(theList.end, 0)
       
    private def insertBefore(item: A, loc: Iter): Iter = {  //always keep same list
-      _size += 1
       if (loc.equals(end)) {
          val prevlitr = loc.litr.prev
          prevlitr().append(item)
+         _size += 1
          return new Iter(prevlitr, prevlitr().length-1)
       } //else
       loc.litr().insert(loc.aind, item)
+      _size += 1
       return new Iter(loc.litr, loc.aind)
    }
    /** REQuires (but doesn't test or enforce) that 
@@ -129,8 +132,11 @@ class BALBOADLL[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses S
             left = mid
          }
       }
+      //INV: left() is a real item, since the array is nonempty
       if (keyComp(item, litrprev()(left)) == 0) {
          return new Iter(litrprev, left)
+      } else if (right == litrprev().length) {
+         return new Iter(litr, 0)
       } else { 
          return new Iter(litrprev, right)
       }
@@ -138,7 +144,7 @@ class BALBOADLL[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses S
 
    def find(item: A): Iter = {
       val itr = findPlace(item)
-      if (isEmpty || keyComp(item, itr()) == 0) return itr else return end
+      if (isEmpty || (itr.hasNext && keyComp(item, itr()) == 0)) return itr else return end
    }
 
    def size = _size

@@ -21,7 +21,6 @@ trait ISR[A] {
    def size: Int                        
    def isEmpty: Boolean = (size <= 0)
 
-
    //Some methods whose implementations come "for free"---need not be duplicated across code.
    //These "Generic Algorithms" could be coded by clients but are most convenient here.
    //This is a prime reason why unike Java interfaces, Scala traits may have real code.
@@ -50,5 +49,7 @@ trait ISR[A] {
       while (itr.hasNext) { ret ::= itr.next() }  //advances itr and returns value
       return ret.reverse
    }
+
+   def contains(item: A): Boolean = find(item).hasNext
 }
 

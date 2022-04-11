@@ -15,7 +15,7 @@
 
     Now "find" has a second dilemma: if item is not already stored, should we
     return the end iterator, or an iterator to the place where it could be inserted,
-    i.e., to the place where we could first tell it is not found?
+    i.e., to the place where we could firast tell it is not found?
     We make a *private* method findPlace for the latter behavior.
 
     SCALA-SPECIFIC ELEMENTS: 
@@ -105,12 +105,12 @@ class SortedSLL[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //change
       while (itr.hasNext && keyComp(item, itr()) > 0) {  
          itr.next()
       }
-      println("From " + item + ", SLL found " + (if (itr.hasNext) itr() else "end"))
+      //println("From " + item + ", SLL found " + (if (itr.hasNext) itr() else "end"))
       return itr
    }
    def find(item: A): Iter = {
       val itr = findPlace(item)
-      if (isEmpty || keyComp(item, itr()) == 0) return itr else return end
+      if (isEmpty || (itr.hasNext && keyComp(item, itr()) == 0)) return itr else return end
    }
 
    def size = _size

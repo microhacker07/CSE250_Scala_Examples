@@ -103,7 +103,7 @@ class SortedArrayISR[A](keyComp: (A,A) => Int) extends ISR[A] {     //changed fr
    }
    def find(item: A): Iter = {
       val itr = findPlace(item)
-      if (isEmpty || keyComp(item, itr()) == 0) return itr else return end
+      if (isEmpty || (itr.hasNext && keyComp(item, itr()) == 0)) return itr else return end
    }
 
    def size = _size
@@ -114,8 +114,6 @@ class SortedArrayISR[A](keyComp: (A,A) => Int) extends ISR[A] {     //changed fr
    //Appending whole sequences  is now majorly dubious given the sortedness
    //invariant, so skip & ignore.
 
-   def diagnosticString = data.toList
-
 }
 
-   
+

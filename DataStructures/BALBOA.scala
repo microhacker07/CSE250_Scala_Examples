@@ -29,6 +29,8 @@ class BALBOA[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses Sort
        */
       def apply(): A = {
          assert(hasNext, "Attempt to fetch item past end in AIOLI\n" + Outer.diagnosticString)
+         assert(0 <= lind && lind < theList.length && 0 <= aind && aind < theList(lind).length,
+                "Out of bounds index " + lind + " and/or " + aind + " in object\n" + Outer.diagnosticString)
          return theList(lind)(aind)
       }
 
@@ -64,12 +66,16 @@ class BALBOA[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses Sort
    def end: Iter = new Iter(theList.length-1, 0)
       
    private def insertBefore(item: A, loc: Iter): Iter = {  //always keep same list
-      _size += 1
-      if (loc.equals(end)) {
+      if (isEmpty && theList.length == 1) {
+         theList.prepend(new ArrayBuffer[A]())
+         theList(0).insert(0,item)
+      } else if (loc.equals(end)) {
          theList(loc.lind-1).append(item)
+          _size += 1
          return new Iter(loc.lind-1, theList(loc.lind-1).length-1)
       } //else
       theList(loc.lind).insert(loc.aind, item)
+       _size += 1
       return new Iter(loc.lind, loc.aind)
    }
    /** REQuires (but doesn't test or enforce) that 
@@ -126,8 +132,11 @@ class BALBOA[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses Sort
             left = mid
          }
       }
+      //INV: left() is a real item, since the array is nonempty
       if (keyComp(item, theList(lind)(left)) == 0) {
          return new Iter(lind, left)
+      } else if (right == theList(lind).length) {   //item is past end, move to next begin
+         return new Iter(lind+1, 0)
       } else { 
          return new Iter(lind, right)
       }
@@ -135,7 +144,7 @@ class BALBOA[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses Sort
 
    def find(item: A): Iter = {
       val itr = findPlace(item)
-      if (isEmpty || keyComp(item, itr()) == 0) return itr else return end
+      if (isEmpty || (itr.hasNext && keyComp(item, itr()) == 0)) return itr else return end
    }
 
    def size = _size
