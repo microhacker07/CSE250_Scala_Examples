@@ -3,19 +3,29 @@
 # Used to check which files at ~regan/cse250/ScalaSamples/ do not have a header
 # Based on "grab_files.sh"
 
-EXAMPLES="https://cse.buffalo.edu/~regan/cse250/ScalaSamples/"
+URL="https://cse.buffalo.edu/~regan/cse250"
 
-wget -q -r -np -nH --cut-dirs=1 -P download $EXAMPLES
+FOLDERS=("ScalaSamples" "MaxWords" "DataStructures")
 
+WORKDIR=$(pwd)
 echo "Files without a header:"
-for FILE in ./download/cse250/ScalaSamples/*.scala
+for i in "${FOLDERS[@]}"
 do
-    grep -E "/[*][*].*File.*[.]scala.*KWR" $FILE &>/dev/null
-    EXIT=$?
-    if [ $((EXIT)) -eq 1 ]
-    then
-        echo -e "\t$FILE"
-    fi
+    wget -q -r -np -nH --cut-dirs=1 -P download "$URL/$i/"
+
+    cd "./download/cse250/$i/"
+
+    for FILE in *.scala
+    do
+        grep -E "/[*][*].*File.*[.]scala.*KWR" $FILE &>/dev/null
+        EXIT=$?
+        if [ $((EXIT)) -eq 1 ]
+        then
+            echo "$i/$FILE"
+        fi
+    done
+
+    cd $WORKDIR
 done
 
 rm -rf download
