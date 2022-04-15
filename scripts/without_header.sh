@@ -28,4 +28,4 @@ do
     cd $WORKDIR
 done
 
-rm -rf download
+# rm -rf download

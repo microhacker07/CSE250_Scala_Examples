@@ -52,7 +52,7 @@ class SortedSLL[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //change
          return preat.item
       }
 
-      def hasNext: Boolean = (preat.next != endSentinel)
+      def hasNext: Boolean = (preat != endSentinel && preat.next != endSentinel)
 
       def update(newItem: A) = {
          assert(hasNext, "Attempt to update item past end in SortedSLL\n" + Outer.diagnosticString)
