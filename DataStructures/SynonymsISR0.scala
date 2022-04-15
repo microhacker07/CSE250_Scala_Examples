@@ -178,6 +178,7 @@ object SynonymsISR0 extends App {
    /** Needed because "find" etc. take a whole item, not just its key.  
        But it can be a dummy item in fields that aren't used for keys.
        Note that "null.asInstanceOf[StringBox]" is OK even when StringBox is a case class.
+       SLIGHT CHANGE TO THIS
     */
    def dummyEntry(key: String) = new SynonymEntry0(key, new StringBox())
 
@@ -218,7 +219,7 @@ object SynonymsISR0 extends App {
                         || (lookup.contains(dummyEntry(word+"_a__")) && lookup(word+"_a__").size > 0)
                         || (lookup.contains(dummyEntry(word+"_r__")) && lookup(word+"_r__").size > 0))
 
-         //YOU CAN IGNORE/DELETE THIS TEST CONDITION (it was my own debig check of the Fallows1898.txt file)
+         //YOU CAN IGNORE/DELETE THIS TEST CONDITION (it was my own debug check of the Fallows1898.txt file)
          val emptyKeyOnly = (!recip) && (!hasSynonyms) && (lookup.contains(dummyEntry(word))
                             || lookup.contains(dummyEntry(word+"_v__")) || lookup.contains(dummyEntry(word+"_n__"))
                             || lookup.contains(dummyEntry(word+"_a__")) || lookup.contains(dummyEntry(word+"_r__")))
