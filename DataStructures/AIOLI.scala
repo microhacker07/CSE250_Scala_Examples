@@ -8,16 +8,22 @@
  */
 import scala.collection.mutable.ArrayBuffer
 
+import java.io.FileWriter   //makes it easy to append
+import java.io.PrintWriter  //makes "print" and "println" available
+
+
 class AIOLI[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses SortedSLL.scala
    var theArray: ArrayBuffer[SortedSLL[A]] = new ArrayBuffer[SortedSLL[A]]
    private var _size = 0
    private var rskip = 1
-   
+   theArray += new SortedSLL[A](keyComp)
 
    /** Iter adds three methods to standard Scala next() and hasNext for iterators.
        INV: Iterator is attached to the node prior to the item it designates
        INV: theArray(ind).item <= iat.item <= theArray(ind+1).item
             with iat "physically between" the two.
+       INV: Although end is a valid position for SortedSLL[A]#Iter, having iat==end
+            is not valid for AIOLI.Iter.  So must check and move to begin of next list.
     */
    class Iter(var ind: Int, var iat: SortedSLL[A]#Iter) extends Iterator[A] {
 
@@ -32,7 +38,12 @@ class AIOLI[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses Sorte
          assert(hasNext, "Attempt to advance past end in AIOLI\n" + Outer.diagnosticString)
          //INV: implies ind is not last index of array, so ind+1 is valid
          if (iat.hasNext) {
-            return iat.next()
+            val ret = iat.next() 
+            if (!iat.hasNext) { 
+               ind += 1
+               iat = theArray(ind).begin
+            }
+            return ret
          } else {
             ind += 1
             iat = theArray(ind).begin
@@ -58,14 +69,21 @@ class AIOLI[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses Sorte
    def begin: Iter = new Iter(0, theArray(0).begin)  //always exist, by second CLASS INV
    def end: Iter = new Iter(theArray.length-1, theArray(theArray.length-1).end)
       
-   private def insertBefore(item: A, loc: Iter): Iter = {  //always keep same list
+   /** Insert before item in given linked list, except unless loc == end,
+       in which case we insert before end of last list.
+    */
+   private def insertBefore(item: A, loc: Iter): Iter = {  //always keep same list unless end
       _size += 1
-      val thisList: SortedSLL[A] = theArray(loc.ind)
-      //val liter = new thisList.Iter(loc.iat.preat.asInstanceOf[thisList.Node])
-      //val itr = thisList.insertBefore(item, liter)
-      val itr = thisList.insertBefore(item, loc.iat.asInstanceOf[thisList.Iter])
-      //val itr = thisList.insert(item)
-      return new Iter(loc.ind, itr)
+      if (loc.hasNext) {
+         val thisList:SortedSLL[A] = theArray(loc.ind)
+         //val liter = new thisList.Iter(loc.iat.preat.asInstanceOf[thisList.Node])
+         //val itr = thisList.insertBefore(item, liter)
+         val itr = thisList.insertBefore(item, loc.iat.asInstanceOf[thisList.Iter])
+         //val itr = thisList.insert(item)
+         return new Iter(loc.ind, itr)
+      } //else
+      val thatList:SortedSLL[A] = theArray(loc.ind-1)
+      return new Iter(loc.ind-1, thatList.insertBefore(item, thatList.end))
    }
    /** REQuires (but doesn't test or enforce) that 
        keyComp(preat.item, item) <= 0 && keyComp(item,preat.next.item) <= 0.
@@ -92,7 +110,7 @@ class AIOLI[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses Sorte
       val thisList = theArray(loc.ind)
       val tmp = thisList.remove(loc.iat.asInstanceOf[thisList.Iter])
       //val tmp = theArray(loc.ind).remove(loc())
-      if (theArray(loc.ind).isEmpty) {
+      if (theArray(loc.ind).isEmpty && !isEmpty) {
          theArray.remove(loc.ind)
       }
       return tmp
@@ -106,7 +124,11 @@ class AIOLI[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses Sorte
    private def findPlace(item: A): Iter = {
       var left = begin
       var right = end
-      if (right.iat.equals(left.iat) || keyComp(item, left()) < 0) {
+      //if (right.iat.equals(left.iat) || keyComp(item, left()) < 0) {
+      if (left.hasNext && left() == null.asInstanceOf[A]) {
+         println(diagnosticString)
+      }
+      if ((!left.hasNext) || keyComp(item, left()) < 0) {
          return left
       } //else INV: left.item <= item < right.item, with end.item == +infinity
       var ret = begin
@@ -119,16 +141,20 @@ class AIOLI[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses Sorte
             left = mid
          }
       }
-      if (keyComp(item, left()) == 0) { ret = left } else { ret = right }
+      if (!ret.hasNext) {
+         return ret
+      } //else ret.ind is real and ret.ind+1 exists
       val iat = theArray(ret.ind).findPlace(item)
-      val itrnew = new Iter(ret.ind, iat)
-      println("From " + item + ", AIOLI found " + (if (itrnew.hasNext) itrnew() else "end"))
-      return itrnew
+      if (iat.hasNext) {
+         return new Iter(ret.ind, iat)
+      } else {   //move to first item of next segment, which could be the end again
+         return new Iter(ret.ind+1, theArray(ret.ind+1).begin)
+      }
    }
 
    def find(item: A): Iter = {
       val itr = findPlace(item)
-      if (isEmpty || keyComp(item, itr()) == 0) return itr else return end
+      if (isEmpty || (itr.hasNext && keyComp(item, itr()) == 0)) return itr else return end
    }
 
    def size = _size

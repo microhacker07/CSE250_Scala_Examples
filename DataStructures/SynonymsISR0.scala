@@ -57,7 +57,8 @@ class SynonymBox0 extends Cardbox[SynonymEntry0]((x,y) => x.key.compareTo(y.key)
  */
 object SynonymReader {
    def readEntries: ArrayBuffer[SynonymEntry0] = {
-      val synFile = "Fallows1898.txt"
+      //val synFile = "Fallows1898.txt"
+      val synFile = "Fallows1898fx.txt"        //now use this version of the file
       val src = Source.fromFile(synFile)
       var synarray = new ArrayBuffer[SynonymEntry0]()
    
