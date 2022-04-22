@@ -93,7 +93,7 @@ class SortedArrayISR[A](keyComp: (A,A) => Int) extends ISR[A] {     //changed fr
       } //else INV: left.item <= item < right.item, with end.item == +infinity
       while (right.at - left.at >= 2) {
          val mid = new Iter((right.at + left.at)/2)  //integer division!
-         if (keyComp(item, mid()) < 0) {
+         if (keyComp(item, mid()) <= 0) {
             right = mid
          } else {
             left = mid

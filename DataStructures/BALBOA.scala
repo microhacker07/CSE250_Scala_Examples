@@ -126,7 +126,7 @@ class BALBOA[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses Sort
       } //else INV: left.item <= item < right.item, with end.item == +infinity
       while (right - left >= 2) {
          val mid = (right + left)/2   //integer division!
-         if (keyComp(item, theList(lind)(mid)) < 0) {
+         if (keyComp(item, theList(lind)(mid)) <= 0) {
             right = mid
          } else {
             left = mid

@@ -135,7 +135,7 @@ class AIOLI[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>     //uses Sorte
       while (right.ind - left.ind >= 2) {
          val newInd = (right.ind + left.ind)/2   //integer division!
          val mid = new Iter(newInd, theArray(newInd).begin)  
-         if (keyComp(item, mid()) < 0) {
+         if (keyComp(item, mid()) <= 0) {
             right = mid
          } else {
             left = mid
