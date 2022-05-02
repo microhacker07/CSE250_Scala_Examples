@@ -15,7 +15,7 @@
     Again, the "null.asInstanceOf[A]" feature avoids needing a default A _ object.
     CHANGED 3/17/22 to pass in a key-match function rather than use the Keyable trait.
  */
-class DoublyLinkedList[A](keyMatch: (A,A) => Boolean) extends ISR[A] {
+class DLLISR[A](keyMatch: (A,A) => Boolean) extends ISR[A] {
 
    protected class DNode(var item: A, var prev: DNode, var next: DNode)
    private val endSentinel = new DNode(null.asInstanceOf[A],null,null)
@@ -90,6 +90,17 @@ class DoublyLinkedList[A](keyMatch: (A,A) => Boolean) extends ISR[A] {
    def size = _size
 
    //override def isEmpty = (_size <= 0)
+
+   def diagnosticString = {
+      var itr = begin
+      var ret = ""
+      while (itr.hasNext) {
+         ret += "" + itr.at + ": " + itr.next() + "\n"
+      }
+      ret += "end sentinel: " + endSentinel + "\n"
+      ret
+   }
+
 
 }
 

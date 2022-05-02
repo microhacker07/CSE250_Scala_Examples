@@ -9,8 +9,11 @@
 //class Cardbox[A](keyComp: (A,A) => Int) extends SortedSLL[A](keyComp)
 //class Cardbox[A](keyComp: (A,A) => Int) extends SortedDLL[A](keyComp)
 //class Cardbox[A](keyComp: (A,A) => Int) extends SortedArrayISR[A](keyComp)
+//class Cardbox[A](keyComp: (A,A) => Int) extends AIOLISLL[A](keyComp)
 //class Cardbox[A](keyComp: (A,A) => Int) extends AIOLI[A](keyComp)
 //class Cardbox[A](keyComp: (A,A) => Int) extends BALBOA[A](keyComp)
-class Cardbox[A](keyComp: (A,A) => Int) extends BALBOADLL[A](keyComp)
+//class Cardbox[A](keyComp: (A,A) => Int) extends BALBOADLL[A](keyComp)
+//class Cardbox[A](keyComp: (A,A) => Int) extends BSTISR(keyComp)
+class Cardbox[A](m: Int, hashFun:A=>Int, itemMatch: (A,A) => Boolean) extends HashISR(m,hashFun,itemMatch)
 
 

@@ -16,6 +16,9 @@ class Flower(val name: String, val perennial: Boolean,
 
    def keyMatch(other: Flower): Boolean = { name == other.name }
    def keyComp(other: Flower): Int = { name.compareTo(other.name) }
+   def itemMatch(other: Flower): Boolean = { 
+      name == other.name && perennial == other.perennial && peakMonth == other.peakMonth
+   }
 
    override def toString: String = {                  //uses List iterator
       val p = if (perennial) "P" else "A"
@@ -26,10 +29,9 @@ class Flower(val name: String, val perennial: Boolean,
    }
 }
 
-
-
 //class Flowerbox extends Cardbox[Flower]((f1,f2) => f1.keyMatch(f2)) {
-class Flowerbox extends Cardbox[Flower]((f1,f2) => f1.keyComp(f2)) {
+//class Flowerbox extends Cardbox[Flower]((f1,f2) => f1.keyComp(f2)) {
+class Flowerbox extends Cardbox[Flower](5, f => f.name.hashCode + f.peakMonth.hashCode, (f1,f2) => f1.itemMatch(f2)) {
    override def toString: String = {         //uses implementation's own Iter
       if (isEmpty) { return "Empty flowerbox" }
       val itr = begin
@@ -50,8 +52,11 @@ object FlowerCardbox extends App {
 
    //box1.insert(sunflower, box.begin)
    //box1.insert(rose, box.end)
+println("Box1 starts with ")
+println("" + box1.diagnosticString)
    box1.insert(sunflower)
-println("Box1 now has " + box1)
+println("Box1 now has ")
+println("" + box1)
 println(box1.diagnosticString)
    box1.insert(rose)
    //box1.insert(sunflower)
@@ -90,7 +95,7 @@ println("Found tigerlily in\n" + box2.diagnosticString)
    box2.remove(itrf)
 println("Removed tigerlily")
    itrf = box2.find(rose)
-println("Found the name of the rose in " + box2.diagnosticString)
+println("Found the name of the rose in\n" + box2.diagnosticString)
    try {
       box2.remove(itrf)
    } catch {
