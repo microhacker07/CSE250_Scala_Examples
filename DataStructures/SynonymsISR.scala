@@ -16,34 +16,44 @@ import scala.collection.mutable.ArrayBuffer
 
 //import ISR._   //still don't have packages working on Autograder... :-(
 
+object SpeechParts extends Enumeration {
+  //type SpeechPart = Value
+  val Adjective, Noun, Verb, Misc, Unknown = Value
+}
 
-/** Same simple class as in the Map-based Assignment 4 key, but truly needed for ISR use.
+/** Assignment 4 class changed to have a part-of-speech field
+    INV: category is one of "noun", "verb", "adjective", or "misc" (or "unknown")
  */
-case class SynonymEntry(key: String, synonyms: StringBox)
+case class SynonymEntry(key: String, kind: SpeechParts.Value, synonyms: StringBox)
 
 
 
 //Use ISR classes for *both* the individual synonym lists *and* the whole book 
 
-//class StringBox extends Cardbox[String]((x,y) => x.compareTo(y))      //doesn't matter here
-case class StringBox() extends Cardbox[String]((x,y) => x.compareTo(y))
+//class StringBox extends Cardbox[String]((x,y) => x.compareTo(y))
+class StringBox extends Cardbox[String](13, x=>x.hashCode, (x,y) => x==y)
 
-class SynonymBox extends Cardbox[SynonymEntry]((x,y) => x.key.compareTo(y.key)) {
+//class SynonymBox(comp: (SynonymEntry,SynonymEntry) => Int) extends Cardbox[SynonymEntry](comp) {
+//class SynonymBox extends Cardbox[SynonymEntry]((x,y) => x.key.compareTo(y.key)) {
+//class SynonymBox extends Cardbox[SynonymEntry](10007, x=>x.key.hashCode, (x,y) => (x.key==y.key && x.kind==y.kind)) {
+class SynonymBox extends Cardbox[SynonymEntry](1000, x=>x.key.hashCode, (x,y) => (x.key==y.key)) {
 
    /** By coding "apply" we can automatically adapt the "contains" already coded
        in ISR.scala to work with the exact same syntax used for Scala's own Map class.
     */
+/*
    def apply(key: String): StringBox = {
       //val itr = find(new SynonymEntry(key, new StringBox())) 
-      val itr = find(SynonymEntry(key, StringBox()))
+      val itr = find(SynonymEntry(key, SpeechParts.Unknown, new StringBox()))
       if (itr.hasNext) {
          return itr().synonyms
       } else {
          println("SynonymBox.apply(key) used on non-present key, hope returning empty synonyms list is OK.")
          //return new StringBox()
-         return StringBox()
+         return new StringBox()
       }
    }
+*/
 }
 
 
@@ -56,7 +66,7 @@ class SynonymBox extends Cardbox[SynonymEntry]((x,y) => x.key.compareTo(y.key)) 
  */
 object SynonymReader {
    def readEntries: ArrayBuffer[SynonymEntry] = {
-      val synFile = "Fallows1898.txt"
+      val synFile = "Fallows1898fx.txt"
       val src = Source.fromFile(synFile)
       var synarray = new ArrayBuffer[SynonymEntry]()
    
@@ -64,6 +74,7 @@ object SynonymReader {
       var inSyn = false
       var accumeLine = ""
       var count = 0
+      var kind = SpeechParts.Unknown
       for (line <- src.getLines()) {
          if (line.startsWith("KEY:")) {
             if (key != "" || inSyn) {
@@ -82,16 +93,16 @@ object SynonymReader {
                key = key.toLowerCase
                if (line.contains("\\n.\\")) {
                   //println("Added noun from line " + line)
-                  key += "_n__"
+                  kind = SpeechParts.Noun
                } else if (line.contains("\\v.\\")) {
                   //println("Added verb from line " + line)
-                  key += "_v__"
+                  kind = SpeechParts.Verb
                } else if (line.contains("\\a.\\")) {
                   //println("Added adjective from line " + line)
-                  key += "_a__"
+                  kind = SpeechParts.Adjective
                } else if (line.contains("\\r.\\")) {
                   //println("Added adjective from line " + line)
-                  key += "_r__"
+                  kind = SpeechParts.Misc
                }
                //if (key.startsWith("wage")) { println(key) }
             }
@@ -107,6 +118,7 @@ object SynonymReader {
    
          } else if (line.startsWith("ANT:") || line.startsWith("=")) {
             if (inSyn && key != "") {
+               accumeLine = accumeLine.trim()
                if (accumeLine.endsWith(".")) { accumeLine = accumeLine.dropRight(1) }
                val syns = accumeLine.split(",\\s+")
                if (syns.size > 0) {
@@ -114,7 +126,7 @@ object SynonymReader {
                   //val item = SynonymEntry(key, SortedSet[String]())
                   //val item = SynonymEntry(key, ListBuffer[String]())
                   //ONLY CHANGES are here.  Need "insert" not "+=" to keep sortedness.
-                  val item = SynonymEntry(key, new StringBox())
+                  val item = SynonymEntry(key, kind, new StringBox())
                   for (word <- syns) {
                      //item.synonyms += (word.toLowerCase)
                      item.synonyms.insert(word.toLowerCase)
@@ -131,6 +143,7 @@ object SynonymReader {
             key = ""
             inSyn = false
             accumeLine = ""
+            kind = SpeechParts.Unknown
          } else if (inSyn) {
             accumeLine += " " + line
          } else {
@@ -146,13 +159,15 @@ object SynonymReader {
             
 object SynonymsISR extends App {
    val outp = new PrintWriter(new FileWriter("output.txt",true));  //appends
+   def keyComp(x: SynonymEntry, y: SynonymEntry) = x.key.compareTo(y.key)
 
    var synarray = SynonymReader.readEntries
    println("Created " + synarray.length + " entries.")
 
-   //val lookup = SortedMap.empty[String,SortedSet[String]]   //A4 key choice
-   //val lookup = SortedMap.empty[String,StringBox]           //halfway ISR use choice
-   val lookup = new SynonymBox()                              //ISR for both items and their synonym lists
+   synarray = scala.util.Random.shuffle(synarray)
+   println("Shuffled " + synarray.length + " entries.")
+
+   val lookup = new SynonymBox()
 
    var count = 0
    val ms = 1000000.0
@@ -180,64 +195,64 @@ object SynonymsISR extends App {
          println(s"SynonymBox item $count is ${item.key}:" + item.synonyms.toList)
       }
    }
+
+   //val h = new Heap[SynonymEntry](10000, (x,y) => x.key.compareTo(y.key))
+   //h.fromArray(synarray.toArray)
+   //lookup.fromSortedArray(h.toSortedArray)
+
    val tm2 = System.nanoTime()
    var elapsedTime = (tm2 - tm1)/ms
    println("")
    println("SynonymBox creation took time " + elapsedTime + " ms, from " + lookup.size + " different entries")
+   println("Iterating finds " + lookup.toList.size + " entries")
    println("\n\n\n\n")
+
+   
 
    /** Needed because "find" etc. take a whole item, not just its key.  
        But it can be a dummy item in fields that aren't used for keys.
        Note that "null.asInstanceOf[StringBox]" is OK even when StringBox is a case class.
     */
    //def dummyEntry(key: String) = new SynonymEntry(key, new StringBox())
-   def dummyEntry(key: String) = new SynonymEntry(key, null.asInstanceOf[StringBox])
-   //def dummyEntry(key: String) = new SynonymEntry(key, StringBox())
+   //def dummyEntry(key: String) = new SynonymEntry(key, null.asInstanceOf[StringBox])
+   def dummyEntry(key: String) = new SynonymEntry(key, SpeechParts.Unknown, new StringBox())
 
 
    println("\nTiming the main run now..." + (if (allowPrintWhenTiming) "" else "no printing...") + "\n")
    
    val t1 = System.nanoTime()
 
-   //for ((key,synSet) <- lookup) {   //ISR uses explicit iteration instead.
-   var eitr = lookup.begin
-   while (eitr.hasNext) {
-      val entry = eitr.next()
-      val key = entry.key   //just so no need to retype next lines
-      val synSet = entry.synonyms
-      val kw = if (key.endsWith("__")) key.dropRight(4) else key
-      val tag = if (key.endsWith("__")) " ("+kw+"="+key.takeRight(4)(1)+")" else ""
-      var itr = synSet.begin
-      //for (word <- synSet) {
-      while (itr.hasNext) {
-         val word = itr.next()
-         val recip = ((lookup.contains(dummyEntry(word)) && lookup(word).contains(kw))
-                        || (lookup.contains(dummyEntry(word+"_v__")) && lookup(word+"_v__").contains(kw))
-                        || (lookup.contains(dummyEntry(word+"_n__")) && lookup(word+"_n__").contains(kw))
-                        || (lookup.contains(dummyEntry(word+"_a__")) && lookup(word+"_a__").contains(kw))
-                        || (lookup.contains(dummyEntry(word+"_r__")) && lookup(word+"_r__").contains(kw)))
-         //recip = (lookup.contains(word) && lookup(word).contains(kw))
-         val nonrecip = (!recip) && ((lookup.contains(dummyEntry(word)) && lookup(word).size > 0)
-                        || (lookup.contains(dummyEntry(word+"_v__")) && lookup(word+"_v__").size > 0)
-                        || (lookup.contains(dummyEntry(word+"_n__")) && lookup(word+"_n__").size > 0)
-                        || (lookup.contains(dummyEntry(word+"_a__")) && lookup(word+"_a__").size > 0)
-                        || (lookup.contains(dummyEntry(word+"_r__")) && lookup(word+"_r__").size > 0))
-         val emptyKeyOnly = (!recip) && (!nonrecip) && (lookup.contains(dummyEntry(word))
-                            || lookup.contains(dummyEntry(word+"_v__")) || lookup.contains(dummyEntry(word+"_n__"))
-                            || lookup.contains(dummyEntry(word+"_a__")) || lookup.contains(dummyEntry(word+"_r__")))
+   var keyitr = lookup.begin
+   while (keyitr.hasNext) {
+      val entry = keyitr.next()
+      val key = entry.key           //TASK: For each synonym "word" of key, lookup word and see if key is
+      val synSet = entry.synonyms   //one of word's own synonyms.  Because word might appear in different
+      var synitr = synSet.begin     //noun,verb,adj., etc. forms, we have to try multiple keys.
+      var recip = false
+      var hasSyns = false
+      while (synitr.hasNext) {
+         val word = synitr.next()
+         val wordAsItem = dummyEntry(word)
+         var worditr = lookup.find(wordAsItem)
+         //while (worditr.hasNext && keyComp(wordAsItem,worditr()) == 0) {
+         while (worditr.hasNext && word.compareTo(worditr().key) == 0) {
+            recip = recip || worditr().synonyms.contains(key)
+            hasSyns = hasSyns || (worditr().synonyms.size > 0)
+            worditr.next()
+         }
          if (allowPrintWhenTiming) {
-            if (recip && kw.startsWith("q")) {
-               outp.println(s"$kw and $word are reciprocal synonyms" + tag)
-               //println(s"$kw and $word are reciprocal synonyms"+tag)
-            } else if (nonrecip && kw.startsWith("q")) {
-               outp.println(s"$kw lists $word but $word has a list of synonyms without $kw")
-               //println(s"$kw lists $word but $word has a list of synonyms without $kw")
-            } else if (emptyKeyOnly) {
-               //println(s"$kw lists $word which is a key but Xref only or otherwise has no synonyms")
-            } else if (kw.startsWith("q")) {
-               //println(s"$kw lists $word but that is not a key")
+            if (recip && key.startsWith("q")) {
+               outp.println(s"$key and $word are reciprocal synonyms (key = " + entry.kind + ")")
+               //println(s"$key and $word are reciprocal synonyms"+tag)
+            } else if ((!recip) && hasSyns && key.startsWith("q")) {
+               outp.println(s"$key lists $word but $word has a list of synonyms without $key")
+               //println(s"$key lists $word but $word has a list of synonyms without $key")
+            } else if (key.startsWith("q")) {
+               //println(s"$key lists $word but that is not a key")
             }
          }
+         recip = false
+         hasSyns = false
       }
    }
                
