@@ -5,7 +5,7 @@
 import scala.reflect.ClassTag
 import scala.collection.ArrayOps
 
-class Heap[A: ClassTag](cap: Int, keyComp: (A,A) => Int) {
+class Heap[A: ClassTag](cap: Int, var keyComp: (A,A) => Int) {
    private val heap: Array[A] = Array.ofDim[A](cap+1)
    var end = 1  //INV: 0 is swap, 1..cap is data
    

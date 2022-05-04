@@ -35,8 +35,8 @@ class StringBox extends Cardbox[String](13, x=>x.hashCode, (x,y) => x==y)
 
 //class SynonymBox(comp: (SynonymEntry,SynonymEntry) => Int) extends Cardbox[SynonymEntry](comp) 
 //class SynonymBox extends Cardbox[SynonymEntry]((x,y) => x.key.compareTo(y.key)) 
-//class SynonymBox extends Cardbox[SynonymEntry](10007, x=>x.key.hashCode, (x,y) => (x.key==y.key && x.kind==y.kind)) 
-class SynonymBox extends Cardbox[SynonymEntry](1000, x=>x.key.hashCode, (x,y) => (x.key==y.key)) 
+//class SynonymBox extends Cardbox[SynonymEntry](10009, x=>x.key.hashCode, (x,y) => (x.key==y.key && x.kind==y.kind)) 
+class SynonymBox extends Cardbox[SynonymEntry](100, x=>x.key.hashCode, (x,y) => (x.key==y.key)) 
 
 
 
@@ -146,8 +146,8 @@ object SynonymsISR extends App {
    var synarray = SynonymReader.readEntries
    println("Created " + synarray.length + " entries.")
 
-   //synarray = scala.util.Random.shuffle(synarray)
-   //println("Shuffled " + synarray.length + " entries.")
+   synarray = scala.util.Random.shuffle(synarray)
+   println("Shuffled " + synarray.length + " entries.")
 
    val lookup = new SynonymBox()
 
@@ -178,9 +178,9 @@ object SynonymsISR extends App {
       }
    }
 
-   //val h = new Heap[SynonymEntry](10000, (x,y) => x.key.compareTo(y.key))
-   //h.fromArray(synarray.toArray)
-   //lookup.fromSortedArray(h.toSortedArray)
+   val h = new Heap[SynonymEntry](10000, (x,y) => x.key.compareTo(y.key))
+   h.fromArray(synarray.toArray)
+   lookup.fromSortedArray(h.toSortedArray)
 
    val tm2 = System.nanoTime()
    var elapsedTime = (tm2 - tm1)/ms
