@@ -22,12 +22,12 @@ import scala.collection.mutable.ArrayBuffer   //only for initial read of fallows
 /** Same simple class as in the Map-based Assignment 4 key, but truly needed for ISR use.
     On Assignment 5, CHANGE THIS to have an extra field for the part of speech.
  */
-case class SynonymEntry0(key: String, synonyms: StringBox)
+case class SynonymEntry0(key: String, synonyms: StringBox0)
 
 
 //We use ISR classes for *both* the individual synonym lists *and* the whole book 
 
-class StringBox extends Cardbox[String]((x,y) => x.compareTo(y))   //LEAVE THIS THE SAME
+class StringBox0 extends Cardbox[String]((x,y) => x.compareTo(y))   //LEAVE THIS THE SAME
 
 class SynonymBox0 extends Cardbox[SynonymEntry0]((x,y) => x.key.compareTo(y.key)) {
 
@@ -37,13 +37,13 @@ class SynonymBox0 extends Cardbox[SynonymEntry0]((x,y) => x.key.compareTo(y.key)
        BUT YOU WILL ELIMINATE THIS MAP-LIKE CODE, USING ITERATORS INSTEAD.
        COMMENT-IN THE "LINE TO GET YOU STARTED" BELOW AND WORK FROM THERE
     */
-   def apply(key: String): StringBox = {
-      val itr = find(SynonymEntry0(key, new StringBox()))
+   def apply(key: String): StringBox0 = {
+      val itr = find(SynonymEntry0(key, new StringBox0()))
       if (itr.hasNext) {
          return itr().synonyms
       } else {
          println("SynonymBox0.apply(key) used on non-present key, hope returning empty synonyms list is OK.")
-         return new StringBox()
+         return new StringBox0()
       }
    }
 }
@@ -55,7 +55,7 @@ class SynonymBox0 extends Cardbox[SynonymEntry0]((x,y) => x.key.compareTo(y.key)
     beginning "ANT:" or with "=".  Assume words of those lines begin in
     column 5.  Reader uses state pattern to work one line at a time.
  */
-object SynonymReader {
+object SynonymReader0 {
    def readEntries: ArrayBuffer[SynonymEntry0] = {
       //val synFile = "Fallows1898.txt"
       val synFile = "Fallows1898fx.txt"        //now use this version of the file
@@ -112,7 +112,7 @@ object SynonymReader {
                if (syns.size > 0) {
 
                   //!! Need "insert" not "+=" to keep sortedness with the ISR code.
-                  val item = SynonymEntry0(key, new StringBox())
+                  val item = SynonymEntry0(key, new StringBox0())
                   for (word <- syns) {
                      //item.synonyms += (word.toLowerCase)
                      item.synonyms.insert(word.toLowerCase)
@@ -145,7 +145,7 @@ object SynonymReader {
 object SynonymsISR0 extends App {
    val outp = new PrintWriter(new FileWriter("output.txt",true));  //appends
 
-   var synarray = SynonymReader.readEntries
+   var synarray = SynonymReader0.readEntries
    println("Created " + synarray.length + " entries.")
 
    val lookup = new SynonymBox0()           //ISR for both items and their synonym lists
@@ -178,10 +178,10 @@ object SynonymsISR0 extends App {
 
    /** Needed because "find" etc. take a whole item, not just its key.  
        But it can be a dummy item in fields that aren't used for keys.
-       Note that "null.asInstanceOf[StringBox]" is OK even when StringBox is a case class.
+       Note that "null.asInstanceOf[StringBox0]" is OK even when StringBox0 is a case class.
        SLIGHT CHANGE TO THIS
     */
-   def dummyEntry(key: String) = new SynonymEntry0(key, new StringBox())
+   def dummyEntry(key: String) = new SynonymEntry0(key, new StringBox0())
 
 
    println("\nTiming the main run now..." + (if (allowPrintWhenTiming) "" else "no printing...") + "\n")

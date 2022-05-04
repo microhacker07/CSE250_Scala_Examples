@@ -32,27 +32,12 @@ case class SynonymEntry(key: String, kind: SpeechParts.Value, synonyms: StringBo
 //Use ISR classes for *both* the individual synonym lists *and* the whole book 
 
 class StringBox extends Cardbox[String]((x,y) => x.compareTo(y))
+//class StringBox extends Cardbox[String](13, x=>x.hashCode, (x,y) => x==y)
 
-class SynonymBox(var keyComp: (SynonymEntry,SynonymEntry) => Int) extends Cardbox[SynonymEntry](keyComp) {
-//class SynonymBox extends Cardbox[SynonymEntry](keyComp = (x,y) => x.key.compareTo(y.key)) {
-
-   /** By coding "apply" we can automatically adapt the "contains" already coded
-       in ISR.scala to work with the exact same syntax used for Scala's own Map class.
-    */
-/*
-   def apply(key: String): StringBox = {
-      //val itr = find(new SynonymEntry(key, new StringBox())) 
-      val itr = find(SynonymEntry(key, SpeechParts.Unknown, new StringBox()))
-      if (itr.hasNext) {
-         return itr().synonyms
-      } else {
-         println("SynonymBox.apply(key) used on non-present key, hope returning empty synonyms list is OK.")
-         //return new StringBox()
-         return new StringBox()
-      }
-   }
-*/
-}
+class SynonymBox(var keyComp: (SynonymEntry,SynonymEntry) => Int) extends Cardbox[SynonymEntry](keyComp) 
+//class SynonymBox extends Cardbox[SynonymEntry](keyComp = (x,y) => x.key.compareTo(y.key)) 
+//class SynonymBox extends Cardbox[SynonymEntry](10007, x=>x.key.hashCode, (x,y) => (x.key==y.key && x.kind==y.kind))
+//class SynonymBox extends Cardbox[SynonymEntry](1000, x=>x.key.hashCode, (x,y) => (x.key==y.key))
 
 
 
@@ -155,16 +140,20 @@ object SynonymReader {
 }
             
             
-object SynonymsISR extends App {
+object SynonymsISRx2 extends App {
    val outp = new PrintWriter(new FileWriter("output.txt",true));  //appends
    def keyComp2(x: SynonymEntry, y: SynonymEntry): Int = x.key.compareTo(y.key)
 
    var synarray = SynonymReader.readEntries
    println("Created " + synarray.length + " entries.")
 
+   //synarray = scala.util.Random.shuffle(synarray)
+   //println("Shuffled " + synarray.length + " entries.")
+
+
    //val lookup = SortedMap.empty[String,SortedSet[String]]   //A4 key choice
    //val lookup = SortedMap.empty[String,StringBox]           //halfway ISR use choice
-   val lookup = new SynonymBox(keyComp2)                              //ISR for both items and their synonym lists
+   val lookup = new SynonymBox(keyComp2)                      //ISR for both items and their synonym lists
    //val lookup = new SynonymBox()
 
    var count = 0
@@ -193,12 +182,18 @@ object SynonymsISR extends App {
          println(s"SynonymBox item $count is ${item.key}:" + item.synonyms.toList)
       }
    }
+
+   //val h = new Heap[SynonymEntry](10000, (x,y) => x.key.compareTo(y.key))
+   //h.fromArray(synarray.toArray)
+   //lookup.fromSortedArray(h.toSortedArray)
+
    val tm2 = System.nanoTime()
    var elapsedTime = (tm2 - tm1)/ms
    println("")
    println("SynonymBox creation took time " + elapsedTime + " ms, from " + lookup.size + " different entries")
    println("Iterating finds " + lookup.toList.size + " entries")
    println("\n\n\n\n")
+
 
    /** Needed because "find" etc. take a whole item, not just its key.  
        But it can be a dummy item in fields that aren't used for keys.

@@ -52,14 +52,14 @@ class Heap[A: ClassTag](cap: Int, keyComp: (A,A) => Int) {
       return ret
    }
 
-   def fromArray(arr: Array[A]): Unit = {  //REQ: arr(n) exists and is empty
+   def fromArray(arr: Array[A]): Unit = {  //A.k.a.: "makeHeap", "heapify"
       val sz = arr.size
       assert(sz <= cap, "Array too big")
       for (i <- 0 until sz) { heap(i) = arr(i) }
       heap(sz) = heap(0)
       end = sz+1
-      for (u <- end/2 to 1 by -1) {  //INV: Sub-heaps rooted at v > u are valid
-         fixDown(u)                  //now INV holds for u too
+      for (u <- (end-1)/2 to 1 by -1) {  //INV: Sub-heaps rooted at v > u are valid
+         fixDown(u)                      //now INV holds for u too
       }
    }
 

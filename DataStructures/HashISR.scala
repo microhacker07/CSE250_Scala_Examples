@@ -16,54 +16,53 @@ class HashISR[A](numSlots: Int, hashFun: A => Int, itemMatch: (A,A) => Boolean) 
    private var _size = 0
 
    /** Iter adds three methods to standard Scala next() and hasNext for iterators.
-       INV: Iter is attached to the node it designates
-       INV: Iter is never at the end position of a chain.
-       INV: End iterator has ind==numSlots, whereupon iat is "rogue"
+       INV1: Iter is attached to the list node it designates, not its "pre"
+       INV2: Iter is never at the end position of a chain.
+       INV3: End iterator has ind==numSlots; then we don't care about liat
     */
-   class Iter(var ind: Int, var iat: DLLISR[A]#Iter) extends Iterator[A] {
+   class Iter(var ind: Int, var liat: DLLISR[A]#Iter) extends Iterator[A] {
 
       /** Special Scala syntax allows using just parens to return the data item.
        */
       def apply(): A = {
          assert(hasNext, "Attempt to fetch item past end in HashISR\n" + Outer.diagnosticString)
-         return iat()   //note re-use of ISR here
+         return liat()   //note re-use of DLLISR#Iter.apply() here
       }
 
-      //private[Outer] def adjustBin() = {    
+      //private[Outer] def adjustBin() = {      //not allowed, stupidly IMPHO
       private[HashISR] def adjustBin() = {      //like nextBin() in the text
-      //def adjustBin() = {      //like nextBin() in the text
-         if (!iat.hasNext) {
+         if (!liat.hasNext) {
             ind += 1
             while (ind < numSlots && theTable(ind).isEmpty) { ind += 1 }
             if (ind < numSlots) {
-               iat = theTable(ind).begin
+               liat = theTable(ind).begin
             }
-         } //can leave only at ind==numSlots end position
+         } //otherwise leaves at ind==numSlots end position, don't care about liat
       }
 
       def next(): A = {
          assert(hasNext, "Attempt to advance past end in HashISR\n" + Outer.diagnosticString)
-         //INV: implies ind is not last index of array, so ind+1 is valid
-         if (iat.hasNext) {
-            val ret = iat.next() 
+         if (liat.hasNext) {
+            val ret = liat.next() 
             adjustBin()
             return ret
-         } else {    //we forgive leaving iat at the end of a chain
+         } else {          //should we forgive a violation of INV2 here??
             adjustBin()
-            return iat()
+            return next()  //not infinite loop, but could lead to assertion violation
          }
       }
 
-      def hasNext: Boolean = (iat.hasNext || ind < theTable.length)
-      //Note: The CLASS INV that all indices have nonempty lists enables this code to be short
+      //def hasNext: Boolean = liat.hasNext   //absolutely relies on INV2 holding
+      def hasNext: Boolean = { adjustBin(); liat.hasNext }  //"defensive driving"
 
       def update(newItem: A) = {
          assert(hasNext, "Attempt to update item past end in AIOLI\n" + Outer.diagnosticString)
-         iat.update(newItem)
+         liat.update(newItem)
       }
 
-      def equals(other: Iter): Boolean = { ind == other.ind && iat.equals(other.iat) }
-      override def clone = new Iter(ind, iat)
+      def equals(other: Iter): Boolean = { ind == other.ind && liat.equals(other.liat) }
+      //override def clone = new Iter(ind, liat)
+      override def clone = new Iter(ind, liat.clone)   //needed !!
    }
 
    //Public Implementation of ISR Trait---sorting and keyComp don't change this.
@@ -77,14 +76,14 @@ class HashISR[A](numSlots: Int, hashFun: A => Int, itemMatch: (A,A) => Boolean) 
    }
    def end: Iter = new Iter(numSlots, theTable(numSlots-1).end)
       
-   /** Insert before item in given linked list, even if loc.iat==end
+   /** Insert before item in given linked list, even if loc.liat==end
     */
    private def insertBefore(item: A, loc: Iter): Iter = {  //always keep same list unless end
       _size += 1
       val thisList:DLLISR[A] = theTable(loc.ind)
-      //val liter = new thisList.Iter(loc.iat.preat.asInstanceOf[thisList.Node])
+      //val liter = new thisList.Iter(loc.liat.preat.asInstanceOf[thisList.Node])
       //val itr = thisList.insertBefore(item, liter)
-      val itr = thisList.insert(item, loc.iat.asInstanceOf[thisList.Iter])
+      val itr = thisList.insert(item, loc.liat.asInstanceOf[thisList.Iter])
       //val itr = thisList.insert(item)
       return new Iter(loc.ind, itr)
    }
@@ -115,7 +114,7 @@ class HashISR[A](numSlots: Int, hashFun: A => Int, itemMatch: (A,A) => Boolean) 
       //control here means loc is on a real element
       _size -= 1
       val thisList = theTable(loc.ind)
-      val tmp = thisList.remove(loc.iat.asInstanceOf[thisList.Iter])
+      val tmp = thisList.remove(loc.liat.asInstanceOf[thisList.Iter])
       //val tmp = theTable(loc.ind).remove(loc())
       return tmp
    }

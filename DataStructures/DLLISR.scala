@@ -52,6 +52,7 @@ class DLLISR[A](keyMatch: (A,A) => Boolean) extends ISR[A] {
       }
 
       def equals(other: Iter): Boolean = { at == other.at }
+      override def clone = new Iter(at)
    }
 
    //Public Implementation of ISR Trait

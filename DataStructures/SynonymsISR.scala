@@ -33,28 +33,10 @@ case class SynonymEntry(key: String, kind: SpeechParts.Value, synonyms: StringBo
 //class StringBox extends Cardbox[String]((x,y) => x.compareTo(y))
 class StringBox extends Cardbox[String](13, x=>x.hashCode, (x,y) => x==y)
 
-//class SynonymBox(comp: (SynonymEntry,SynonymEntry) => Int) extends Cardbox[SynonymEntry](comp) {
-//class SynonymBox extends Cardbox[SynonymEntry]((x,y) => x.key.compareTo(y.key)) {
-//class SynonymBox extends Cardbox[SynonymEntry](10007, x=>x.key.hashCode, (x,y) => (x.key==y.key && x.kind==y.kind)) {
-class SynonymBox extends Cardbox[SynonymEntry](1000, x=>x.key.hashCode, (x,y) => (x.key==y.key)) {
-
-   /** By coding "apply" we can automatically adapt the "contains" already coded
-       in ISR.scala to work with the exact same syntax used for Scala's own Map class.
-    */
-/*
-   def apply(key: String): StringBox = {
-      //val itr = find(new SynonymEntry(key, new StringBox())) 
-      val itr = find(SynonymEntry(key, SpeechParts.Unknown, new StringBox()))
-      if (itr.hasNext) {
-         return itr().synonyms
-      } else {
-         println("SynonymBox.apply(key) used on non-present key, hope returning empty synonyms list is OK.")
-         //return new StringBox()
-         return new StringBox()
-      }
-   }
-*/
-}
+//class SynonymBox(comp: (SynonymEntry,SynonymEntry) => Int) extends Cardbox[SynonymEntry](comp) 
+//class SynonymBox extends Cardbox[SynonymEntry]((x,y) => x.key.compareTo(y.key)) 
+//class SynonymBox extends Cardbox[SynonymEntry](10007, x=>x.key.hashCode, (x,y) => (x.key==y.key && x.kind==y.kind)) 
+class SynonymBox extends Cardbox[SynonymEntry](1000, x=>x.key.hashCode, (x,y) => (x.key==y.key)) 
 
 
 
@@ -164,8 +146,8 @@ object SynonymsISR extends App {
    var synarray = SynonymReader.readEntries
    println("Created " + synarray.length + " entries.")
 
-   synarray = scala.util.Random.shuffle(synarray)
-   println("Shuffled " + synarray.length + " entries.")
+   //synarray = scala.util.Random.shuffle(synarray)
+   //println("Shuffled " + synarray.length + " entries.")
 
    val lookup = new SynonymBox()
 

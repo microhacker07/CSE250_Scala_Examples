@@ -30,8 +30,8 @@ class Flower(val name: String, val perennial: Boolean,
 }
 
 //class Flowerbox extends Cardbox[Flower]((f1,f2) => f1.keyMatch(f2)) {
-//class Flowerbox extends Cardbox[Flower]((f1,f2) => f1.keyComp(f2)) {
-class Flowerbox extends Cardbox[Flower](5, f => f.name.hashCode + f.peakMonth.hashCode, (f1,f2) => f1.itemMatch(f2)) {
+class Flowerbox extends Cardbox[Flower]((f1,f2) => f1.keyComp(f2)) {
+//class Flowerbox extends Cardbox[Flower](5, f => f.name.hashCode + f.peakMonth.hashCode, (f1,f2) => f1.itemMatch(f2)) {
    override def toString: String = {         //uses implementation's own Iter
       if (isEmpty) { return "Empty flowerbox" }
       val itr = begin

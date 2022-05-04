@@ -77,7 +77,7 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
       }
 
       def equals(other: Iter): Boolean = { at == other.at }
-      //override def clone = new Iter(at)
+      override def clone = new Iter(at)
    }
 
    //Public Implementation of ISR Trait
