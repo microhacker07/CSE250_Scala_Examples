@@ -1,20 +1,26 @@
-/** File "BSTISR.scala" by KWR for CSE250, Spring 2022.
+/** File "BSTAVL.scala" by KWR for CSE250, Spring 2022.
     Requires having ISR.scala compiled at same level (since no package).
-    Simple binary search tree using the ISR trait, paralleling text ch. 16, pp506-510
-    but using a sentinel "end" node rather than null references.  This is done in the
-    circularly linked fashion of CL&R(&S), with root.parent = end and end.parent = root.
+    AVL tree, paralleling text chapter 21 but with simpler code.
 
-    CLASS INV: Items are sorted non-descending by inorder according to keyComp in sequence
+    CLASS INVs: (1) Items are sorted non-descending by inorder according to keyComp in sequence
+    (2) No node has a left subtree whose height is more than 1 different than that of its right subtree.
+
+    Lots of code is unchanged from BSTISR.scala.  Could almost have derived this class from it.
+    But the Node class is augmented with a new field, and the necessity to derive *it* too would
+    have created compilations with Scala's way of handling inner classes generally.  So not done.
  */
-class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
+class BSTAVL[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
 
-   protected class Node(var item: A, var left: Node, var right: Node, var parent: Node) 
-   private val endSentinel = new Node(null.asInstanceOf[A],null,null,null)
-   private var root = new Node(null.asInstanceOf[A],endSentinel,endSentinel,endSentinel)
+   protected class Node(var item: A, var left: Node, var right: Node, var parent: Node, var height: Int) 
+   private val endSentinel = new Node(null.asInstanceOf[A],null,null,null,0)
+   private var root = new Node(null.asInstanceOf[A],endSentinel,endSentinel,endSentinel,1)
    endSentinel.left = root
    endSentinel.right = root
    endSentinel.parent = root
    private var _size = 0
+
+
+//----------------------------Private Utilities of Any BST-----------------------------
 
    /** Helper method is inclusive---if x is a leaf or left elbow, it returns x.
     */
@@ -25,7 +31,6 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
     */
    private def isNotLeftChild(u: Node) = (u != u.parent.left)
    private def isNotRightChild(u: Node) = (u != u.parent.right)
-
 
    /** The single most useful method to code first, even before the Iter class
        Defines a cycle that begins and ends with the sentinel.  Basic fact:
@@ -42,6 +47,7 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
          return leftmostBelow(x.right)
       } //else
       var y = x
+      //while (y != root && isNotLeftChild(y)) {   //extra defensive
       while (isNotLeftChild(y)) {
          y = y.parent
       }
@@ -60,6 +66,97 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
       return y.parent
    }
 
+
+//----------------------Rotations and AVL Rebalancing------------------------------
+
+   /** REQ: w is a real node with a real left child.  Those are the only two
+       nodes in w's subtree whose heights can change in the rotation, so we
+       recompute them.  But the hights of w.parent will also change, and this
+       needs to be checked by caller.
+    */
+   private def rotateRight(w: Node): Unit = {
+      assert(w != endSentinel, "Attempt to rotate at end")
+      var u = w.left
+      assert(u != endSentinel, "Attempt to updraft an empty left child")
+      var v = u.right   //OK if this is endSentinel
+      var p = w.parent  //OK if w is root and p is endSentinel
+      //first link u to p, twice if it becomes new root.
+      if (w == p.left) { p.left = u }
+      if (w == p.right) { p.right = u }
+      u.parent = p
+      u.right = w
+      w.parent = u
+      w.left = v
+      v.parent = w
+      w.height = 1 + Math.max(v.height,w.right.height)
+      u.height = 1 + Math.max(u.left.height, w.height)
+      root = endSentinel.left
+   }
+
+   private def rotateLeft(w: Node): Unit = {
+      assert(w != endSentinel, "Attempt to rotate at end")
+      var u = w.right
+      assert(u != endSentinel, "Attempt to updraft an empty right child")
+      var v = u.left    //OK if this is endSentinel
+      var p = w.parent  //OK if w is root and p is endSentinel
+      //first link u to p, twice if it becomes new root.
+      if (w == p.left) { p.left = u }
+      if (w == p.right) { p.right = u }
+      u.parent = p
+      u.left = w
+      w.parent = u
+      w.right = v
+      v.parent = w
+      w.height = 1 + Math.max(v.height,w.left.height)
+      u.height = 1 + Math.max(u.right.height, w.height)
+      root = endSentinel.left
+   }
+
+   /** AVL rebalancing routine, from bottom up procedurally.
+       Math fact: after insertion, an "else" branch with rotation will be taken only once.
+       But after a deletion of an elbow or leaf, rotations can need to propagate.
+    */
+   private def fixUp(w: Node): Unit = {
+      if (w == endSentinel) return     //we fixed the root and recursed on root.parent
+      //else
+      w.height = 1 + Math.max(w.left.height, w.right.height)   //need to propagate updates
+      if (Math.abs(w.left.height - w.right.height) <= 1) {
+         fixUp(w.parent)
+      } else if (w.left.height - w.right.height > 1) {
+         val u = w.left
+         if (u.left.height >= u.right.height) {  //single-rotation case
+            rotateRight(w)                       //makes u the new root of subtree from w
+            fixUp(u.parent)
+         } else {                                //double-rotation case
+            val v = u.right
+            rotateLeft(u)
+            rotateRight(w)                       //now v is root where w was
+            fixUp(v.parent)
+         }
+      } else {                                   //w.right.height - w.left.height > 1
+         val u = w.right
+         if (u.right.height >= u.left.height) {  //single-rotation case
+            rotateLeft(w)                        //makes u the new root of subtree from w
+            fixUp(u.parent)
+         } else {                                //double-rotation case
+            val v = u.left
+            rotateRight(u)
+            rotateLeft(w)                       //now v is root where w was
+            fixUp(v.parent)
+         }
+      }
+   }
+
+   private def isLeaf(u: Node): Boolean = (u.left == endSentinel && u.right == endSentinel)
+
+   private def isAVL(w: Node): Boolean = {
+      if (w == endSentinel || isLeaf(w)) return true;
+      //else
+      return ((Math.abs(w.left.height - w.right.height) <= 1) && isAVL(w.left) && isAVL(w.right))
+   }
+      
+            
+//------------------------Iterator Class and "ISR" Public Interface---------------------------
 
    /** Iter add three methods to standard Scala next() and hasNext for iterators.
        INV: Iterator is attached to the node *of* the item it designates.
@@ -95,7 +192,8 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
       //override def clone = new Iter(at)
    }
 
-   //Public Implementation of ISR Trait
+   
+//--------------------------------Rest of ISR Routines--------------------------------
 
    type I = Iter
 
@@ -110,11 +208,17 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
       assert((leftward && loc.at.left == endSentinel) || (loc.at.right == endSentinel && !leftward), 
              "Attempt to munge an existing node while inserting below " + loc())
       if (leftward) {
-         loc.at.left = new Node(item, endSentinel, endSentinel, loc.at)
-         return new Iter(loc.at.left)
+         loc.at.left = new Node(item, endSentinel, endSentinel, loc.at, 1)
+         val itr = new Iter(loc.at.left)
+         if (loc.at.right == endSentinel) { loc.at.height = 2 }
+         fixUp(loc.at)
+         return itr      //is this robust if the parent rotates right?
       } else {
-         loc.at.right = new Node(item, endSentinel, endSentinel, loc.at)
-         return new Iter(loc.at.right)
+         loc.at.right = new Node(item, endSentinel, endSentinel, loc.at, 1)
+         val itr = new Iter(loc.at.right)
+         if (loc.at.left == endSentinel) { loc.at.height = 2 }
+         fixUp(loc.at)
+         return itr
       }
    }
 
@@ -163,6 +267,7 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
             endSentinel.parent = root
             endSentinel.left = root
             endSentinel.right = root
+            //no need to fixUp
             return tmp
          } else if (root.right == endSentinel) {
             root = root.left
@@ -184,6 +289,7 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
          } else {
             parent.right = loc.at.right
          }
+         fixUp(parent)
       } else if (loc.at.right == endSentinel) {   //its left subtree becomes parent's new subtree
          val parent = loc.at.parent
          if (loc.at.left != endSentinel) { loc.at.left.parent = parent }
@@ -192,6 +298,7 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
          } else {
             parent.left = loc.at.left
          }
+         fixUp(parent)
       } else {    //loc.at is a full binary node.  But this means its successor is not.
                   //So after swapping in that node's value, we can remove it with one more call.
          val u = inorderSuccessor(loc.at)  //which is "findVictim" in the text
@@ -238,8 +345,11 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
 
    //override def isEmpty = (_size <= 0)
 
+
+//-----------------------------------Extra Utilities------------------------------------
+
    def clear(): Unit = {
-      root = new Node(null.asInstanceOf[A],endSentinel,endSentinel,endSentinel)
+      root = new Node(null.asInstanceOf[A],endSentinel,endSentinel,endSentinel,1)
       endSentinel.left = root
       endSentinel.right = root
       endSentinel.parent = root
@@ -251,10 +361,15 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
          clear()
       } else {
          root = fromSortedArray(arr, 0, arr.length, endSentinel)
+              //^^^returns new, so root must be re-connected *to* as well
          endSentinel.parent = root   //omitting this causes subtle bug!
          endSentinel.left = root     //this was not supposed to be necessary...
          endSentinel.right = root    //...but apparently it is
+         if (root.parent != endSentinel) println("root not connected in FSA")
          _size = arr.size
+         if (!isAVL(root)) {
+            println("Tree from array is not AVL.")
+         }
       }
    }
    private def fromSortedArray(arr: Array[A], left: Int, right: Int, parent: Node): Node = {
@@ -263,17 +378,18 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
          println("Not supposed to get left = right = " + left)
          return endSentinel
       } else if (span == 1) {
-         return new Node(arr(left), endSentinel, endSentinel, parent)
+         return new Node(arr(left), endSentinel, endSentinel, parent, 1)
       } else if (span == 2) {
-         val v = new Node(arr(left), endSentinel, endSentinel, parent)
-         val w = new Node(arr(left+1), endSentinel, endSentinel, v)
+         val v = new Node(arr(left), endSentinel, endSentinel, parent, 2)
+         val w = new Node(arr(left+1), endSentinel, endSentinel, v, 1)
          v.right = w
          return v
       } else {
          val mid = (left + right)/2
-         val v = new Node(arr(mid), endSentinel, endSentinel, parent)
+         val v = new Node(arr(mid), endSentinel, endSentinel, parent, 0)
          v.left = fromSortedArray(arr, left, mid, v)
          v.right = fromSortedArray(arr, mid+1, right, v)
+         v.height = 1 + Math.max(v.left.height, v.right.height)
          return v
       }
    }
@@ -286,15 +402,15 @@ class BSTISR[A](keyComp: (A,A) => Int) extends ISR[A] { Outer =>
       if (u == endSentinel || (u == root && isEmpty)) { return "" }
       if (u.left == endSentinel) {
          if (u.right == endSentinel) {
-            return (" "*indent) + "() " + u.item
+            return (" "*indent) + "("+u.height+") " + u.item
          } else {    //Right subtree is uppermost, so will rotate diagram 90 degreews right
-            return sidewaysString(u.right, indent+offset) + "\n" + (" "*indent) + "() " + u.item
+            return sidewaysString(u.right, indent+offset) + "\n" + (" "*indent) + "("+u.height+") " + u.item
          }
       } else if (u.right == endSentinel) {   //now u.left must be non-null
-         return (" "*indent) + "() " + u.item + "\n" + sidewaysString(u.left, indent+offset)
+         return (" "*indent) + "("+u.height+") " + u.item + "\n" + sidewaysString(u.left, indent+offset)
       } else {
          return (sidewaysString(u.right, indent+offset) + "\n"
-                   + (" "*indent) + "() " + u.item + "\n"
+                   + (" "*indent) + "("+u.height+") " + u.item + "\n"
                    + sidewaysString(u.left, indent+offset))
       }
    }

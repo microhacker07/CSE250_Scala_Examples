@@ -4,6 +4,7 @@
     Top level of "implementation sandwich" with the ISR trait at bottom.
     Can change the implementation just by changing the next line of code.
     CHANGED 3/17/22 to pass in a key-match function rather than use a trait.
+    (Updated with more options throughout the term.)
  */
 
 //class Cardbox[A](keyComp: (A,A) => Int) extends SortedSLL[A](keyComp)
@@ -14,6 +15,7 @@
 //class Cardbox[A](keyComp: (A,A) => Int) extends BALBOA[A](keyComp)
 //class Cardbox[A](keyComp: (A,A) => Int) extends BALBOADLL[A](keyComp)
 //class Cardbox[A](keyComp: (A,A) => Int) extends BSTISR(keyComp)
-class Cardbox[A](m: Int, hashFun:A=>Int, itemMatch: (A,A) => Boolean) extends HashISR(m,hashFun,itemMatch)
+class Cardbox[A](keyComp: (A,A) => Int) extends BSTAVL(keyComp)
+//class Cardbox[A](m: Int, hashFun:A=>Int, itemMatch: (A,A) => Boolean) extends HashISR(m,hashFun,itemMatch)
 
 
