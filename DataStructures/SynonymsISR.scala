@@ -146,8 +146,8 @@ object SynonymsISR extends App {
    var synarray = SynonymReader.readEntries
    println("Created " + synarray.length + " entries.")
 
-   synarray = scala.util.Random.shuffle(synarray)
-   println("Shuffled " + synarray.length + " entries.")
+   //synarray = scala.util.Random.shuffle(synarray)
+   //println("Shuffled " + synarray.length + " entries.")
 
    val lookup = new SynonymBox()
 
@@ -178,9 +178,9 @@ object SynonymsISR extends App {
       }
    }
 
-   val h = new Heap[SynonymEntry](10000, (x,y) => x.key.compareTo(y.key))
-   h.fromArray(synarray.toArray)
-   lookup.fromSortedArray(h.toSortedArray)
+   //val h = new Heap[SynonymEntry](10000, (x,y) => x.key.compareTo(y.key))
+   //h.fromArray(synarray.toArray)
+   //lookup.fromSortedArray(h.toSortedArray)
 
    val tm2 = System.nanoTime()
    var elapsedTime = (tm2 - tm1)/ms
