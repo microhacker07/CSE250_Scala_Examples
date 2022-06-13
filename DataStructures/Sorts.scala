@@ -1,6 +1,7 @@
 /** File "Sorts.scala" by KWR.  Improvement of code used for CSE250, Spring 2022.
     Compares MergeSort, QuickSort, and HeapSort on text files---with customizable settings.
     Gives millisecond times and counts of comparisons and copies (one swap = 3 copies).
+    Tested on Scala 2.13.8 system, should run on older and newer ones.
     Typical usage with arguments <file> <tradePoint> <pivotChoice> <switches>:
    
     scala Sorts WarAndPeace.txt 16 medianRandom3 011000            
@@ -15,6 +16,8 @@ Output files "outputms.txt", "outputqs.txt", and "outpuths.txt" show how unstabl
 heapsort are.  To test insertion sort and/or selection sort, choose tradePoint > n.
 
 See also https://github.com/chrswt/algorithms-sedgewick/blob/master/notes/2.3-quicksort.md
+Code routines pull from the Lewis-Lacher textbook (2nd ed.) and other sources; no claim
+of originality is made.
  */
 
 import io.StdIn._
@@ -26,7 +29,7 @@ import scala.reflect.ClassTag
 import scala.collection.mutable.Map
 
             
-case class SortLab[A: ClassTag](comp: (A,A) => Int) {
+class SortLab[A: ClassTag](comp: (A,A) => Int) {
 
    var _tradePoint = 16
    var _useSelectionSort = false   //mergeSort only, since not in place
@@ -152,8 +155,11 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
    }
 
 
-//----------------------------------QuickSort code, from text------------------------
+//----------------------------------QuickSort code-----------------------------------
 
+   /** Median-of-three, but coded to return the index not the item.  Thus the
+       indices are passed in separately.
+    */
    def median3(x:A, y:A, z:A, ix: Int, iy: Int, iz:Int): Int = 
       if (qcomp(x,y) < 0) 
          (if (qcomp(y,z) < 0) iy else (if (qcomp(x,z) < 0) iz else ix))
@@ -161,9 +167,9 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
          (if (qcomp(x,z) < 0) ix else (if (qcomp(y,z) > 0) iy else iz))
 
 
-   /** Wrapper so that comp is only in top-level call and endpoints are below
-       INV: In all ranges, "end" is exclusive, while "start" or "begin" is inclusive
-       Whereas, both "low" and "high" can be inclusive
+   /** Wrapper so that different array endpoints are used only by "qsRecur" inside.
+       INV: In all ranges, "end" is exclusive, while "start" or "begin" is inclusive.
+       Whereas, both "low" and "high" can be inclusive.
     */
    def quickSort(arr: Array[A], qsCap: Int = 10): Array[A] = {
 
@@ -197,7 +203,6 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
          median3(arr(ix), arr(iy), arr(iz), ix, iy, iz)
       }
 
-
       def pickPivot = _pivotChoice match {
          case "first" => pickPivotFirst(_,_)
          case "last" => pickPivotLast(_,_)
@@ -209,8 +214,7 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
          case _ => pickPivotMedianRandom3(_,_)
       }
             
-
-      /** Internal version works in-place, does not copy array
+      /** A version of insertion sort that works in-place and does not copy array
        */
       def inSort(start: Int, end: Int) = {
          for (i <- start+1 until end) {
@@ -228,7 +232,7 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
          }
       }
 
-      /** Partition routines return (low,high) where the recursion sorts
+      /** Both partition routines return (low,high) where the recursion sorts
           arr[start..low) and arr[high..end).  Hence low is *exclusive downward*,
           which makes it OK to be the destination index of the pivot, or the
           inclusive bottom of the pivot's equal range.  And high is *inclusive*.
@@ -263,7 +267,7 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
 
 
       /** From https://yourbasic.org/golang/quicksort-optimizations/
-          Tweaked to take the pivot's index as argument
+          Tweaked to take the pivot's index as argument  Comments theirs.
        */
       def partition3(start:Int, end:Int, pivotIndex: Int): (Int,Int) = {
          val p = arr(pivotIndex)
@@ -304,6 +308,7 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
 	 return (low,high)
       }
 
+
       def qsRecur(start:Int, end:Int): Unit = {    //end is exclusive in this code
          if (start < end - qsCap) {
             val pivotIndex = pickPivot(start, end)
@@ -316,10 +321,16 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
             inSort(start, end)
          }
       }
+
+      
+      //Finally, the executed body of the top-level quickSort routine:
+
       qsRecur(0, arr.length)
       return arr
    }
 
+
+//----------------------------------Heapsort code-------------------------------------
 
 
    private var heap: Array[A] = Array.ofDim[A](0)
@@ -333,28 +344,24 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
    }
 
    def fixDown(u: Int): Unit = {
-      var st = u          //"stone" in text.  Note var needed in Scala for val params
+      var st = u                    //"stone" in Lewis-Lacher text.  
       while (st < (hend+1)/2) {
          val gc = if (2*st+1 >= hend || hcomp(heap(2*st),heap(2*st+1)) > 0) 2*st else 2*st+1
-         //if (2*st+1 >= hend) { hsComps -= 1 }
          if (hcomp(heap(st), heap(gc)) < 0) {
             swap(st,gc)
             st = gc
          } else {
             return
          }
-         //hsComps += 2
       }
    }
            
    def fixUp(u: Int): Unit = {
-      var bubble = u        //note bubble > = 2 means parent exists and is bubble/2
+      var bubble = u                //note bubble > = 2 means parent exists and is bubble/2
       while (bubble >= 2 && hcomp(heap(bubble),heap(bubble/2)) > 0) {   
          swap(bubble,bubble/2)
          bubble = bubble / 2        //integer division
-         //hsComps += 1
       }
-      //if (bubble >= 2) { hsComps += 1 }
    }
 
    def enqueue(item: A): Unit = {
@@ -364,7 +371,7 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
       hend += 1      
    }
       
-   def pop(): A = {        //dequeue in text and Scala generally
+   def pop(): A = {         //called dequeue in text and Scala generally
       val ret = heap(1)
       swap(1,hend-1)        //sometimes it is useful to put max there
       hend -= 1
@@ -372,14 +379,14 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
       return ret
    }
 
-   def makeHeap(arr: Array[A]): Unit = {  //A.k.a.: "makeHeap", "heapify"
+   def makeHeap(arr: Array[A]): Unit = {  //A.k.a.: "make_heap", "heapify"
       val sz = arr.size
       heap = Array.ofDim[A](sz+1)
       for (i <- 0 until sz) { heap(i) = arr(i) }
       heap(sz) = heap(0)
       hend = sz+1
       for (u <- (hend-1)/2 to 1 by -1) {  //INV: Sub-heaps rooted at v > u are valid
-         fixDown(u)                      //now INV holds for u too
+         fixDown(u)                       //now INV holds for u too
       }
    }
 
@@ -399,9 +406,11 @@ case class SortLab[A: ClassTag](comp: (A,A) => Int) {
       }
       return heap.slice(1,sz+1)
    }
+
 }
 
 
+//------------------------------------------Driver-----------------------------------------------
 
 object Sorts extends App {
 
@@ -520,11 +529,12 @@ object Sorts extends App {
 
    def toUnder(str: String) = { val i = str.indexOf('_'); if (i >= 0) str.substring(0,i) else str }
 
-   val ss = SortLab[String]((s1,s2) => toUnder(s1).toLowerCase.compareTo(toUnder(s2).toLowerCase))
+   val ss = new SortLab[String]((s1,s2) => toUnder(s1).toLowerCase.compareTo(toUnder(s2).toLowerCase))
    ss._tradePoint = tradeoffPoint
    ss._useMakeHeap = useMakeHeap
    ss._partitionForEquals = partitionForEquals
    ss._useSelectionSort = useSelectionSort
+
 
    val ts1 = System.nanoTime()
 
@@ -548,7 +558,6 @@ object Sorts extends App {
    ss.isCopies = 0
 
 
-
    val tq1 = System.nanoTime()
 
    val newArray2 = ss.quickSort(stra, tradeoffPoint)
@@ -562,6 +571,7 @@ object Sorts extends App {
    println(s"In total: made $totalComps comparisons and $totalCopies copies")
    println("Time for quickSort: " + elapsedTime + " milliseconds")
 
+
    val th1 = System.nanoTime()
 
    val newArray3 = ss.heapSort(stra)
@@ -571,6 +581,7 @@ object Sorts extends App {
    println(s"\nHeapSort made  ${ss.hsComps} comparisons and ${ss.hsCopies} copies")
    println("Time for heapSort: " + elapsedTime + " milliseconds")
    println("\n")
+
 
    val msout = new PrintWriter(new FileWriter("outputms.txt",false));  //appends
    for (word <- newArray) {
@@ -589,8 +600,5 @@ object Sorts extends App {
       hsout.println(word)
    }
    hsout.close()
-
-
-
 
 }
